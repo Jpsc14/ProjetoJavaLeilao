@@ -1,19 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
-/**
- *
- * @author Adm
- */
-
 import java.sql.PreparedStatement;
 import java.sql.Connection;
-import javax.swing.JOptionPane;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-
+import java.util.List;
 
 public class ProdutosDAO {
 
@@ -53,6 +45,45 @@ public class ProdutosDAO {
              
             while (rs.next()) {
                 ProdutosDTO produto = new ProdutosDTO();
+                produto.setId(rs.getInt("id"));
+                produto.setNome(rs.getString("nome"));
+                produto.setValor(rs.getInt("valor"));
+                produto.setStatus(rs.getString("status"));
+                produtos.add(produto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return produtos;
+    }
+
+    public boolean venderProduto(int id) {
+        String sql = "UPDATE produtos SET status = 'Vendido' WHERE id = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             
+            stmt.setInt(1, id);
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0; // Retorna true se uma linha foi atualizada
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Retorna false em caso de erro
+        }
+    }
+
+    public List<ProdutosDTO> listarProdutosVendidos() {
+        List<ProdutosDTO> produtos = new ArrayList<>();
+        String sql = "SELECT * FROM produtos WHERE status = 'Vendido'";
+        
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+             
+            while (rs.next()) {
+                ProdutosDTO produto = new ProdutosDTO();
+                produto.setId(rs.getInt("id"));
                 produto.setNome(rs.getString("nome"));
                 produto.setValor(rs.getInt("valor"));
                 produto.setStatus(rs.getString("status"));
